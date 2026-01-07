@@ -2,29 +2,49 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 class BackgroundPanel extends JPanel {
         private Image background;
         private BankAccount currentAccount = null;
+        private final ArrayList<BankAccount> accountList = new ArrayList<>();
+
+        private InputMode currentMode = InputMode.NONE;
+        private JTextField inputField;
+        private JLabel promptLabel;
+
+        // current states of input
+        enum InputMode {
+            CREATE_ACCOUNT,
+            SELECT_ACCOUNT,
+            DEPOSIT,
+            WITHDRAW,
+            NONE
+        }
+
 
         public BackgroundPanel(String imagePath) {
+            // normal button image
             ImageIcon backgroundImage = new ImageIcon(getClass().getResource("/" + imagePath));
             ImageIcon buttonImage = new ImageIcon(getClass().getResource("/buttonNormal.png"));
             Image buttonScaledImage = buttonImage.getImage();
             Image newButtonScaledImage = buttonScaledImage.getScaledInstance(120, 70, java.awt.Image.SCALE_SMOOTH);
             buttonImage = new ImageIcon(newButtonScaledImage);
 
+            // clicked button image
             ImageIcon buttonClickedImage = new ImageIcon(getClass().getResource("/buttonClicked.png"));
             Image buttonClickedScaledImage = buttonClickedImage.getImage();
             Image newButtonClickedScaledImage = buttonClickedScaledImage.getScaledInstance(120, 70, java.awt.Image.SCALE_SMOOTH);
             buttonClickedImage = new ImageIcon(newButtonClickedScaledImage);
 
+            // background image
             background = backgroundImage.getImage();
 
-            setLayout(new GridBagLayout());
+            setLayout(new BorderLayout());
 
+            // make all buttons
             JButton createButton = makeButton("Create account", buttonImage);
             JButton viewButton = makeButton("View accounts", buttonImage);
             JButton selectButton = makeButton("Select account", buttonImage);
@@ -33,6 +53,8 @@ class BackgroundPanel extends JPanel {
             JButton exitButton = makeButton("Exit", buttonImage);
 
 
+
+            // make original button icons invisible (replaced with custom image instead)
             invisibleButton(createButton);
             invisibleButton(viewButton);
             invisibleButton(selectButton);
@@ -40,6 +62,7 @@ class BackgroundPanel extends JPanel {
             invisibleButton(withdrawButton);
             invisibleButton(exitButton);
 
+            // overlap the text onto respective button
             textOnButton(createButton);
             textOnButton(viewButton);
             textOnButton(selectButton);
@@ -47,6 +70,7 @@ class BackgroundPanel extends JPanel {
             textOnButton(withdrawButton);
             textOnButton(exitButton);
 
+            // set the image of button to buttonClickedImage when it is clicked
             createButton.setPressedIcon(buttonClickedImage);
             viewButton.setPressedIcon(buttonClickedImage);
             selectButton.setPressedIcon(buttonClickedImage);
@@ -54,11 +78,47 @@ class BackgroundPanel extends JPanel {
             withdrawButton.setPressedIcon(buttonClickedImage);
             exitButton.setPressedIcon(buttonClickedImage);
 
+            JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            inputPanel.setOpaque(false);
 
+            // ===== INPUT AREA (FIXED) =====
+            promptLabel = new JLabel("Select an action", SwingConstants.CENTER);
+            inputField = new JTextField(15);
+            inputField.setOpaque(false);
+            inputField.setBackground(new java.awt.Color(237, 175, 115, 0));
+            inputField.setBorder(BorderFactory.createEmptyBorder());
+
+            JPanel inputPanel1 = new JPanel(new GridLayout(2, 1, 0, 6));
+            inputPanel1.setOpaque(false);
+            inputPanel1.add(promptLabel);
+            inputPanel1.add(inputField);
+
+            JPanel inputContainer = new JPanel(new GridBagLayout());
+            inputContainer.setOpaque(false);
+
+            GridBagConstraints igbc = new GridBagConstraints();
+            igbc.gridx = 0;
+            igbc.gridy = 0;
+            igbc.anchor = GridBagConstraints.CENTER;
+            igbc.weightx = 1.0;
+            igbc.weighty = 1.0;
+
+            JPanel rightHalf = new JPanel(new GridBagLayout());
+            rightHalf.setOpaque(false);
+            rightHalf.setPreferredSize(new Dimension(300, 0)); // HALF of 600px window
+
+            rightHalf.add(inputContainer, igbc);
+            inputContainer.add(inputPanel1, igbc);
+
+            add(rightHalf, BorderLayout.EAST);
+
+
+            // layout to manage the buttons
             JPanel buttonPanel = new JPanel(new GridLayout(3, 2));
             buttonPanel.setPreferredSize(new Dimension(300, 300));
             buttonPanel.setOpaque(false);
 
+            // add the buttons to the layout manager
             buttonPanel.add(createButton);
             buttonPanel.add(viewButton);
             buttonPanel.add(selectButton);
@@ -76,50 +136,92 @@ class BackgroundPanel extends JPanel {
 
             wrapper.add(buttonPanel, gbc);
 
-            add(wrapper, gbc);
+            add(wrapper, BorderLayout.SOUTH);
 
+
+
+
+            /* BUTTON ACTIONS */
             createButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("1");
+                    currentMode = InputMode.CREATE_ACCOUNT;
+                    promptLabel.setText("Enter new account name:");
+                    inputField.setText("");
+                    inputField.requestFocus();
                 }
             });
 
             viewButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("2");
+                    showAccounts();
                 }
             });
 
             selectButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("3");
+                    currentMode = InputMode.SELECT_ACCOUNT;
+                    promptLabel.setText("Enter account name:");
+                    inputField.setText("");
+                    inputField.requestFocus();
                 }
             });
 
             depositButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("4");
+                    currentMode = InputMode.DEPOSIT;
+                    promptLabel.setText("Enter deposit amount:");
+                    inputField.setText("");
+                    inputField.requestFocus();
                 }
             });
 
             withdrawButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("5");
+                    currentMode = InputMode.WITHDRAW;
+                    promptLabel.setText("Enter withdrawal amount:");
+                    inputField.setText("");
+                    inputField.requestFocus();
                 }
             });
 
             exitButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) { 
-                    System.out.println("6");
+                    System.exit(0);
                 }
             });
+
+            inputField.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    handleInput();
+                }
+            });
+
         }
+
+    private void handleInput() {
+        String text = inputField.getText().trim();
+        try {
+            switch (currentMode) {
+                case CREATE_ACCOUNT -> createAccount(text);
+                case SELECT_ACCOUNT -> selectAccount(text);
+                case DEPOSIT -> handleDeposit(Double.parseDouble(text));
+                case WITHDRAW -> handleWithdrawal(Double.parseDouble(text));
+                default -> showError("Select an action first.");
+            }
+        } catch (NumberFormatException ex) {
+            showError("Please enter a valid number.");
+        }
+        inputField.setText("");
+        currentMode = InputMode.NONE;
+        promptLabel.setText("Select an action");
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -175,87 +277,77 @@ class BackgroundPanel extends JPanel {
             return button;
         }
 
-    private static BankAccount createAccount (Scanner scanner, ArrayList<BankAccount> accountList) {
-        System.out.println("Enter account name: ");
-        String accountName = scanner.nextLine();
-        System.out.println("Enter initial balance: ");
-        double initialBalance = scanner.nextDouble();
-        scanner.nextLine();
-        BankAccount newAccount = new BankAccount(accountName, initialBalance);
-        accountList.add(newAccount);
-        System.out.println("Account created and selected!");
-        return newAccount;
+
+    private void createAccount(String name) {
+        if (name.isEmpty()) {
+            showError("Account name cannot be empty.");
+            return;
+        }
+        BankAccount acc = new BankAccount(name, 0);
+        accountList.add(acc);
+        currentAccount = acc;
+        showInfo("Account created and selected.");
     }
 
-    private static void showAccounts (ArrayList<BankAccount> accountList) {
+    private void showAccounts() {
         if (accountList.isEmpty()) {
-            System.out.println("No accounts. To create an account, enter C in selection menu. ");
-        } else {
-            for (BankAccount account : accountList) {
-                System.out.printf("| %s | ", account.getName());
-            }
-            System.out.println();
+            showInfo("No accounts available.");
+            return;
         }
+        StringBuilder sb = new StringBuilder("Accounts:\n");
+        for (BankAccount acc : accountList) {
+            sb.append("- ").append(acc.getName()).append("\n");
+        }
+        showInfo(sb.toString());
     }
 
-    private static BankAccount selectAccount (Scanner scanner, ArrayList<BankAccount> accountList, BankAccount currentAccount) {
-        if (accountList.isEmpty()) {
-            System.out.println("No accounts. To create an account, enter C in selection menu. ");
-        } else {
-            System.out.println("Which account would you like to select?: ");
-            String name = scanner.nextLine();
-            for (BankAccount account : accountList) {
-                if (account.getName().equalsIgnoreCase(name)) {
-                    System.out.printf("%s selected. \n", account);
-                    return account;
-                }
+    private void selectAccount(String name) {
+        for (BankAccount acc : accountList) {
+            if (acc.getName().equalsIgnoreCase(name)) {
+                currentAccount = acc;
+                showInfo("Account selected.");
+                return;
             }
         }
-        System.out.println("Account not found. ");
-        return currentAccount;
+        showError("Account not found.");
     }
 
-    private static void handleDeposit (Scanner scanner, BankAccount account) {
-        if (account == null) {
-            System.out.println("No accounts. To create an account, enter C in selection menu. ");
-        } else {
-            System.out.print("How much would you like to deposit?: $");
-            double amount;
-            amount = scanner.nextDouble();
-            scanner.nextLine();
-            account.deposit(amount);
-            System.out.printf("Account: [%s] | Your new balance is $%.2f. \n", account, account.getBalance());
+    private void handleDeposit(double amount) {
+        if (currentAccount == null) {
+            showError("No account selected.");
+            return;
         }
-    }
-
-    private static void handleWithdrawal (Scanner scanner, BankAccount account) {
-        if (account == null) {
-            System.out.println("No accounts. To create an account, enter C in selection menu. ");
-        } else {
-            System.out.print("How much would you like to withdraw?: $");
-            double amount;
-            amount = scanner.nextDouble();
-            scanner.nextLine();
-
-            if (negativeBalance(account, amount)) {
-                System.out.println("Not enough money in account to withdraw. ");
-                System.out.printf("Your new balance is $%.2f. \n", account.getBalance());
-            } else {
-                account.withdraw(amount);
-                System.out.printf("Account: [%s] | Your new balance is $%.2f. ", account, account.getBalance());
-            }
+        if (amount <= 0) {
+            showError("Amount must be positive.");
+            return;
         }
+        currentAccount.deposit(amount);
+        showInfo("New balance: $" + currentAccount.getBalance());
     }
 
-    private static boolean negativeBalance (BankAccount account, double withdrawAmount) {
-        return (account.getBalance() - withdrawAmount) < 0;
+    private void handleWithdrawal(double amount) {
+        if (currentAccount == null) {
+            showError("No account selected.");
+            return;
+        }
+        if (amount <= 0) {
+            showError("Amount must be positive.");
+            return;
+        }
+        if (currentAccount.getBalance() < amount) {
+            showError("Insufficient funds.");
+            return;
+        }
+        currentAccount.withdraw(amount);
+        showInfo("New balance: $" + currentAccount.getBalance());
     }
 
-    private static String handleChoice (Scanner scanner, String choice) {
-        System.out.println("Not a valid option, try again. ");
-        System.out.print("Do you want to deposit (D), withdraw (W), or exit (E)?: ");
-        choice = scanner.nextLine();
-        return choice;
+    private void showError(String msg) {
+        JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showInfo(String msg) {
+        JOptionPane.showMessageDialog(this, msg, "Info", JOptionPane.INFORMATION_MESSAGE);
     }
     }
 
