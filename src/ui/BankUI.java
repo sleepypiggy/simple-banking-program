@@ -1,7 +1,6 @@
 package ui;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class BankUI extends JFrame {
 
@@ -11,8 +10,7 @@ public class BankUI extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
-        BackgroundPanel backgroundPanel =
-                new BackgroundPanel("backgroundImageNoQuadrants.png");
+        BackgroundPanel backgroundPanel = new BackgroundPanel("testBackground.png");
 
         setContentPane(backgroundPanel);
 

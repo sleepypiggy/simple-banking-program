@@ -6,9 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Scanner;
 import javax.swing.UIManager;
 
 class BackgroundPanel extends JPanel {
@@ -20,7 +18,7 @@ class BackgroundPanel extends JPanel {
         private JTextField inputField;
         private JLabel promptLabel;
 
-        // current states of input
+        // states of input
         enum InputMode {
             CREATE_ACCOUNT,
             SELECT_ACCOUNT,
@@ -28,9 +26,6 @@ class BackgroundPanel extends JPanel {
             WITHDRAW,
             NONE
         }
-
-        UIManager ui = new UIManager();
-
 
         public BackgroundPanel(String imagePath) {
             // normal button image
@@ -59,8 +54,6 @@ class BackgroundPanel extends JPanel {
             JButton withdrawButton = makeButton("Withdraw", buttonImage);
             JButton exitButton = makeButton("Exit", buttonImage);
 
-
-
             // make original button icons invisible (replaced with custom image instead)
             invisibleButton(createButton);
             invisibleButton(viewButton);
@@ -85,19 +78,16 @@ class BackgroundPanel extends JPanel {
             withdrawButton.setPressedIcon(buttonClickedImage);
             exitButton.setPressedIcon(buttonClickedImage);
 
-            JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            inputPanel.setOpaque(false);
-
             promptLabel = new JLabel("Select an action", SwingConstants.CENTER);
             inputField = new JTextField(15);
             inputField.setOpaque(false);
             inputField.setBackground(new java.awt.Color(237, 175, 115, 0));
             inputField.setBorder(BorderFactory.createEmptyBorder());
 
-            JPanel inputPanel1 = new JPanel(new GridLayout(2, 1, 0, 6));
-            inputPanel1.setOpaque(false);
-            inputPanel1.add(promptLabel);
-            inputPanel1.add(inputField);
+            JPanel inputPanel = new JPanel(new GridLayout(2, 1, 0, 6));
+            inputPanel.setOpaque(false);
+            inputPanel.add(promptLabel);
+            inputPanel.add(inputField);
 
             JPanel inputContainer = new JPanel(new GridBagLayout());
             inputContainer.setOpaque(false);
@@ -114,7 +104,7 @@ class BackgroundPanel extends JPanel {
             rightHalf.setPreferredSize(new Dimension(300, 0));
 
             rightHalf.add(inputContainer, igbc);
-            inputContainer.add(inputPanel1, igbc);
+            inputContainer.add(inputPanel, igbc);
 
             add(rightHalf);
 
@@ -132,11 +122,9 @@ class BackgroundPanel extends JPanel {
             buttonPanel.add(exitButton);
 
             JPanel wrapper = new JPanel(new GridBagLayout());
-            //JPanel wrapper1 = new JPanel((new GridBagLayout()));
             wrapper.setOpaque(false);
 
             GridBagConstraints gbc = new GridBagConstraints();
-            //gbc.anchor = GridBagConstraints.SOUTH;
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
 
@@ -147,14 +135,14 @@ class BackgroundPanel extends JPanel {
 
 
 
-            /* BUTTON ACTIONS */
+            // buttons actions
             createButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     currentMode = InputMode.CREATE_ACCOUNT;
                     promptLabel.setText("Enter new account name:");
                     inputField.setText("");
-                    inputField.requestFocus();
+                    inputField.requestFocusInWindow();
                 }
             });
 
@@ -171,7 +159,7 @@ class BackgroundPanel extends JPanel {
                     currentMode = InputMode.SELECT_ACCOUNT;
                     promptLabel.setText("Enter account name:");
                     inputField.setText("");
-                    inputField.requestFocus();
+                    inputField.requestFocusInWindow();
                 }
             });
 
@@ -181,7 +169,7 @@ class BackgroundPanel extends JPanel {
                     currentMode = InputMode.DEPOSIT;
                     promptLabel.setText("Enter deposit amount:");
                     inputField.setText("");
-                    inputField.requestFocus();
+                    inputField.requestFocusInWindow();
                 }
             });
 
@@ -191,7 +179,7 @@ class BackgroundPanel extends JPanel {
                     currentMode = InputMode.WITHDRAW;
                     promptLabel.setText("Enter withdrawal amount:");
                     inputField.setText("");
-                    inputField.requestFocus();
+                    inputField.requestFocusInWindow();
                 }
             });
 
@@ -221,7 +209,7 @@ class BackgroundPanel extends JPanel {
                 case WITHDRAW -> handleWithdrawal(Double.parseDouble(text));
                 default -> showError("Select an action first.");
             }
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException e) {
             showError("Please enter a valid number.");
         }
         inputField.setText("");
@@ -249,11 +237,9 @@ class BackgroundPanel extends JPanel {
         int drawW, drawH;
 
         if (imageRatio > panelRatio) {
-            // Image is wider → fit height, crop sides
             drawH = panelH;
             drawW = (int) (panelH * imageRatio);
         } else {
-            // Image is taller → fit width, crop top/bottom
             drawW = panelW;
             drawH = (int) (panelW / imageRatio);
         }
@@ -292,6 +278,10 @@ class BackgroundPanel extends JPanel {
         BankAccount acc = new BankAccount(name, 0);
         accountList.add(acc);
         currentAccount = acc;
+        UIManager.put("Panel.background", new Color(237, 175, 114));
+        UIManager.put("OptionPane.background", new Color(237, 175, 114));
+        UIManager.put("Button.background", new Color(237, 175, 114));
+        UIManager.put("Button.focusPainted", false);
         showInfo("Account created and selected.");
     }
 
@@ -302,7 +292,7 @@ class BackgroundPanel extends JPanel {
         }
         StringBuilder sb = new StringBuilder("Accounts:\n");
         for (BankAccount acc : accountList) {
-            sb.append("- ").append(acc.getName()).append("\n");
+            sb.append("- ").append(acc.getName()).append(" > $").append(acc.getBalance()).append("\n");
         }
         showInfo(sb.toString());
     }
@@ -353,8 +343,7 @@ class BackgroundPanel extends JPanel {
     }
 
     private void showInfo(String msg) {
-        ImageIcon popupBackground = new ImageIcon(getClass().getResource("/backgroundImage.png"));
-        JOptionPane.showMessageDialog(this, msg, "Info", JOptionPane.INFORMATION_MESSAGE, popupBackground);
+        JOptionPane.showMessageDialog(this, msg, "Info", JOptionPane.INFORMATION_MESSAGE);
     }
     }
 

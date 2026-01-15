@@ -1,20 +1,15 @@
 package main;
 
 import ui.BankUI;
-import bankaccount.BankAccount;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
         loadGlobalFont();
         new BankUI();
-        ArrayList<BankAccount> accountList = new ArrayList<BankAccount>();
-        BankAccount currentAccount = null;
     }
 
     private static void loadGlobalFont() {
@@ -29,8 +24,8 @@ public class Main {
                     UIManager.put(key, uiFont);
                 }
             }
-            Font buttonFont = uiFont.deriveFont(Font.PLAIN, 20f); // Smaller size for buttons
-            UIManager.put("Button.font", buttonFont);  // Set this specifically for buttons
+            Font buttonFont = uiFont.deriveFont(Font.PLAIN, 20f);
+            UIManager.put("Button.font", buttonFont);
         } catch (Exception e) {
             e.printStackTrace();
         }
