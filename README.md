@@ -23,6 +23,7 @@ User inputs like amount of money to deposit/withdraw are done at the top half of
 
 ![Recording 2026-01-14 144535](https://github.com/user-attachments/assets/64668fe4-3cc0-433b-887f-f765e23f1faa)
 
+Note: the buttons have a click down animation in the actual program, the GIF just doesn't have enough frames to show it.
 
 ## Credits
 - Button sprites by ok-lavender: https://ok-lavender.itch.io/
